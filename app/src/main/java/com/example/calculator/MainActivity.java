@@ -4,6 +4,7 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -16,6 +17,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        final EditText EDIT_TEXT = (EditText) findViewById(R.id.editText_Operation);
         Button btnOne = (Button) findViewById(R.id.button_one);
         Button btnTwo = (Button) findViewById(R.id.button_two);
         Button btnThree = (Button) findViewById(R.id.button_three);
@@ -58,10 +60,30 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btnEquals.setOnClickListener(this);
         btnPorcent.setOnClickListener(this);
         btnDot.setOnClickListener(this);
+
+        EDIT_TEXT.setOnKeyListener(new View.OnKeyListener() {
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                Intent intent = new Intent();
+                if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
+                        (keyCode == KeyEvent.KEYCODE_ENTER)) {
+                    String message = "El resultado de la operación aritmetica " + EDIT_TEXT.getText() + " es: \n\n";
+                    String result = calculateOperation();
+                    intent.setClass(getApplicationContext(), ResultActivity.class);
+
+                    if (!result.isEmpty()) {
+                        message += result;
+                        intent.putExtra("RESULT_OPERATION", message);
+                        startActivity(intent);
+                    }
+                    return true;
+                }
+                return false;
+            }
+        });
     }
 
     private void writeOperation(String value) {
-        final EditText mEditText = (EditText) findViewById(R.id.editText_Operation);
+        EditText mEditText = (EditText) findViewById(R.id.editText_Operation);
         String operation = mEditText.getText().toString();
         operation += value;
         mEditText.setText(operation);
@@ -69,113 +91,114 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private String calculateOperation() {
-        final EditText mEditText = (EditText) findViewById(R.id.editText_Operation);
+        EditText mEditText = (EditText) findViewById(R.id.editText_Operation);
         String operation = mEditText.getText().toString();
         Double result = 0.0;
         String firstNumber = "";
         String secondNumber = "";
         String operador = "";
-        Boolean error=false;
-        int contOperatorTogether=0;
-        try{
-        for (int i = 0; i < operation.length(); i++) {
-            if (i == 0) {
-                if (isNumber(operation.charAt(0) + "")) {
-                    firstNumber += operation.charAt(0);
-                } else {
-                    if (operation.charAt(0) == '-') {
+        Boolean error = false;
+        int contOperatorTogether = 0;
+        try {
+            for (int i = 0; i < operation.length(); i++) {
+                if (i == 0) {
+                    if (isNumber(operation.charAt(0) + "")) {
                         firstNumber += operation.charAt(0);
                     } else {
-                        Toast.makeText(getApplicationContext(), "El primer caracter no es correcto", Toast.LENGTH_LONG).show();
-                        error=true;
-                        break;
-                    }
-                }
-            } else {
-                if ((!isNumber(operation.charAt(0) + "")) && !isNumber(operation.charAt(1) + "")) {
-                    Toast.makeText(getApplicationContext(), "No se permiten dos operadores al inicio de la operación", Toast.LENGTH_LONG).show();                        error=true;
-                    error=true;
-                    break;
-                }
-                if (operador.isEmpty()) {
-                    if (isNumber(operation.charAt(i) + "")) {
-                        firstNumber += operation.charAt(i);
-
-                    } else {
-                        if (operation.charAt(i) == '.') {
-                            if (!firstNumber.contains("."))
-                                firstNumber += operation.charAt(i);
-                            else {
-                                Toast.makeText(getApplicationContext(), "El primer número debe poseer solo un punto para los decimales", Toast.LENGTH_LONG).show();
-                                error=true;
-                                break;
-                            }
+                        if (operation.charAt(0) == '-') {
+                            firstNumber += operation.charAt(0);
                         } else {
-                            operador = operation.charAt(i) + "";
+                            Toast.makeText(getApplicationContext(), "El primer caracter no es correcto", Toast.LENGTH_LONG).show();
+                            error = true;
+                            break;
                         }
                     }
                 } else {
-                    if (isNumber(operation.charAt(i) + "")) {
-                        secondNumber += operation.charAt(i);
+                    if ((!isNumber(operation.charAt(0) + "")) && !isNumber(operation.charAt(1) + "")) {
+                        Toast.makeText(getApplicationContext(), "No se permiten dos operadores al inicio de la operación", Toast.LENGTH_LONG).show();
+                        error = true;
+                        error = true;
+                        break;
+                    }
+                    if (operador.isEmpty()) {
+                        if (isNumber(operation.charAt(i) + "")) {
+                            firstNumber += operation.charAt(i);
 
-                    } else {
-                        if (operation.charAt(i) == '.') {
-                            if (!secondNumber.contains("."))
-                                secondNumber += operation.charAt(i);
-                            else {
-                                Toast.makeText(getApplicationContext(), "El segundo número debe poseer solo un punto para los decimales", Toast.LENGTH_LONG).show();
-                                error=true;
-                                break;
-                            }
-                        }else{
-                            contOperatorTogether++;
-                            if((!isNumber(operation.charAt(i-1)+"")&&!isNumber(operation.charAt(i)+""))&&(operation.charAt(i)=='-' )){
-                                secondNumber += operation.charAt(i);
-                            }else{
-                                Toast.makeText(getApplicationContext(), "La operación aritmetica es mal digitada", Toast.LENGTH_LONG).show();
-                                error=true;
-                                break;
+                        } else {
+                            if (operation.charAt(i) == '.') {
+                                if (!firstNumber.contains("."))
+                                    firstNumber += operation.charAt(i);
+                                else {
+                                    Toast.makeText(getApplicationContext(), "El primer número debe poseer solo un punto para los decimales", Toast.LENGTH_LONG).show();
+                                    error = true;
+                                    break;
+                                }
+                            } else {
+                                operador = operation.charAt(i) + "";
                             }
                         }
-                    }
+                    } else {
+                        if (isNumber(operation.charAt(i) + "")) {
+                            secondNumber += operation.charAt(i);
 
+                        } else {
+                            if (operation.charAt(i) == '.') {
+                                if (!secondNumber.contains("."))
+                                    secondNumber += operation.charAt(i);
+                                else {
+                                    Toast.makeText(getApplicationContext(), "El segundo número debe poseer solo un punto para los decimales", Toast.LENGTH_LONG).show();
+                                    error = true;
+                                    break;
+                                }
+                            } else {
+                                contOperatorTogether++;
+                                if ((!isNumber(operation.charAt(i - 1) + "") && !isNumber(operation.charAt(i) + "")) && (operation.charAt(i) == '-')) {
+                                    secondNumber += operation.charAt(i);
+                                } else {
+                                    Toast.makeText(getApplicationContext(), "La operación aritmetica es mal digitada", Toast.LENGTH_LONG).show();
+                                    error = true;
+                                    break;
+                                }
+                            }
+                        }
+
+                    }
                 }
             }
-        }
-        if(contOperatorTogether>1) {
-            Toast.makeText(getApplicationContext(), "La operación aritmetica es mal digitada", Toast.LENGTH_LONG).show();
-            error=true;
-        }
-        if(!error) {
-            result = resultOperation(Double.parseDouble(firstNumber), Double.parseDouble(secondNumber), operador);
-            return result.toString();
-        }else{
-            return "";
-        }
-        }catch (ArithmeticException ex){
+            if (contOperatorTogether > 1) {
+                Toast.makeText(getApplicationContext(), "La operación aritmetica es mal digitada", Toast.LENGTH_LONG).show();
+                error = true;
+            }
+            if (!error) {
+                result = resultOperation(Double.parseDouble(firstNumber), Double.parseDouble(secondNumber), operador);
+                return result.toString();
+            } else {
+                return "";
+            }
+        } catch (ArithmeticException ex) {
             Toast.makeText(getApplicationContext(), "ERROR Aritmético, revisar operación", Toast.LENGTH_LONG).show();
             return "";
         }
     }
 
-    private double resultOperation(Double firstNumber, Double secondNumber, String operator){
-        double result=0;
+    private double resultOperation(Double firstNumber, Double secondNumber, String operator) {
+        double result = 0;
 
         switch (operator) {
             case "+":
-                result=firstNumber+secondNumber;
+                result = firstNumber + secondNumber;
                 break;
             case "-":
-                result=firstNumber-secondNumber;
+                result = firstNumber - secondNumber;
                 break;
             case "*":
-                result=firstNumber*secondNumber;
+                result = firstNumber * secondNumber;
                 break;
-             case "/":
-                 if(secondNumber==0){
-                     throw new ArithmeticException();
-                 }
-                 result=firstNumber/secondNumber;
+            case "/":
+                if (secondNumber == 0) {
+                    throw new ArithmeticException();
+                }
+                result = firstNumber / secondNumber;
 
                 break;
             default:
@@ -197,8 +220,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onClick(View v) {
-        final EditText mEditText = (EditText) findViewById(R.id.editText_Operation);
-        Intent intent= new Intent();
+        EditText mEditText = (EditText) findViewById(R.id.editText_Operation);
+        Intent intent = new Intent();
         switch (v.getId()) {
 
             case R.id.button_one:
@@ -245,7 +268,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                 break;
             case R.id.button_divide:
-               writeOperation("/");
+                writeOperation("/");
 
                 break;
 
@@ -270,12 +293,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 mEditText.setText("");
                 break;
             case R.id.button_equal:
-                String message="El resultado de la operación aritmetica " +mEditText.getText() +" es: \n\n";
-                String result=calculateOperation();
+                String message = "El resultado de la operación aritmetica " + mEditText.getText() + " es: \n\n";
+                String result = calculateOperation();
                 intent.setClass(getApplicationContext(), ResultActivity.class);
 
-                if(!result.isEmpty()){
-                    message+=result;
+                if (!result.isEmpty()) {
+                    message += result;
                     intent.putExtra("RESULT_OPERATION", message);
                     startActivity(intent);
                 }

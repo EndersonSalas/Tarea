@@ -22,8 +22,9 @@
             android:gravity="center_vertical"
             android:paddingTop="0dp"
             android:paddingRight="20dp"
-            android:text="0"
+            android:text=""
             android:textAlignment="textEnd"
+            android:inputType="number"
             android:textSize="50dp"
             android:digits="1234567890.-+/*"/>
     </LinearLayout>
